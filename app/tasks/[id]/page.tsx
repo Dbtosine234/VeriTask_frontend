@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { apiFetch } from "../../../lib/api";
+import {
+  DEMO_USERS,
+  DemoUser,
+  getCurrentUser,
+  getUserById,
+  setStoredUserId,
+} from "../../../lib/session";
 
 type Task = {
   id: string;
@@ -21,16 +28,27 @@ type Task = {
   escrow_status?: string | null;
 };
 
+type ApproveResponse = {
+  message?: string;
+  task?: Task;
+};
+
 export default function TaskDetailPage() {
   const params = useParams<{ id: string }>();
   const taskId = params.id;
 
   const [task, setTask] = useState<Task | null>(null);
+  const [currentUser, setCurrentUser] = useState<DemoUser | null>(null);
   const [proofText, setProofText] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    setCurrentUser(getCurrentUser());
+  }, []);
 
   async function loadTask() {
     try {
@@ -49,14 +67,34 @@ export default function TaskDetailPage() {
     loadTask();
   }, [taskId]);
 
+  function handleUserChange(userId: string) {
+    setStoredUserId(userId);
+    const selected = DEMO_USERS.find((user) => user.id === userId) || null;
+    setCurrentUser(selected);
+    setSuccess("");
+    setError("");
+  }
+
+  const creator = useMemo(() => getUserById(task?.created_by), [task?.created_by]);
+  const worker = useMemo(() => getUserById(task?.worker_id), [task?.worker_id]);
+
+  const isPoster = !!currentUser && currentUser.id === task?.created_by;
+  const isAssignedWorker = !!currentUser && currentUser.id === task?.worker_id;
+  const canAccept = !!currentUser && !!task && task.status === "open" && currentUser.id !== task.created_by;
+  const canFund = !!task && task.escrow_status === "unfunded" && isPoster;
+  const canSubmit = !!task && task.status === "accepted" && isAssignedWorker;
+  const canApprove = !!task && task.status === "submitted" && isPoster;
+
   async function fundEscrow() {
     setActionLoading("fund");
     setError("");
+    setSuccess("");
     try {
       await apiFetch("/escrow/fund", {
         method: "POST",
         body: JSON.stringify({ task_id: taskId }),
       });
+      setSuccess("Escrow funded successfully.");
       await loadTask();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fund escrow");
@@ -66,13 +104,16 @@ export default function TaskDetailPage() {
   }
 
   async function acceptTask() {
+    if (!currentUser) return;
     setActionLoading("accept");
     setError("");
+    setSuccess("");
     try {
       await apiFetch(`/tasks/${taskId}/accept`, {
         method: "POST",
-        body: JSON.stringify({ worker_id: "user_2" }),
+        body: JSON.stringify({ worker_id: currentUser.id }),
       });
+      setSuccess("Task accepted successfully.");
       await loadTask();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to accept task");
@@ -82,17 +123,22 @@ export default function TaskDetailPage() {
   }
 
   async function submitTask() {
+    if (!currentUser) return;
     setActionLoading("submit");
     setError("");
+    setSuccess("");
     try {
       await apiFetch(`/tasks/${taskId}/submit`, {
         method: "POST",
         body: JSON.stringify({
-          worker_id: "user_2",
-          proof_text: proofText,
-          proof_url: proofUrl || null,
+          worker_id: currentUser.id,
+          proof_text: proofText.trim(),
+          proof_url: proofUrl.trim() || null,
         }),
       });
+      setSuccess("Proof submitted successfully.");
+      setProofText("");
+      setProofUrl("");
       await loadTask();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit task");
@@ -104,10 +150,12 @@ export default function TaskDetailPage() {
   async function approveTask() {
     setActionLoading("approve");
     setError("");
+    setSuccess("");
     try {
-      await apiFetch(`/tasks/${taskId}/approve`, {
+      const response = await apiFetch<ApproveResponse>(`/tasks/${taskId}/approve`, {
         method: "POST",
       });
+      setSuccess(response.message || "Task approved and payout released.");
       await loadTask();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to approve task");
@@ -116,36 +164,73 @@ export default function TaskDetailPage() {
     }
   }
 
-
+  function renderStatusPill(label: string | null | undefined) {
+    return (
+      <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/80">
+        {label || "unknown"}
+      </span>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black px-4 py-6 text-white">
-        <div className="mb-4">
-  <Link
-    href="/marketplace"
-    className="text-sm text-white/70 underline underline-offset-4"
-  >
-    Back to marketplace
-  </Link>
-</div>
       <div className="mx-auto max-w-md">
+        <div className="mb-4">
+          <Link
+            href="/marketplace"
+            className="text-sm text-white/70 underline underline-offset-4"
+          >
+            Back to marketplace
+          </Link>
+        </div>
+
+        <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs text-white/50">Active demo identity</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {DEMO_USERS.map((user) => {
+              const selected = currentUser?.id === user.id;
+              return (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => handleUserChange(user.id)}
+                  className={`rounded-full px-3 py-2 text-sm transition ${
+                    selected ? "bg-white text-black" : "border border-white/15 text-white/80"
+                  }`}
+                >
+                  {user.name} · {user.role}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {loading && <p className="text-sm text-white/60">Loading task...</p>}
         {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
+        {success && <p className="mb-4 text-sm text-green-400">{success}</p>}
 
         {task && (
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs text-white/50">Task detail</p>
             <h1 className="text-3xl font-bold">{task.title}</h1>
 
-            <div className="mt-4 space-y-3 text-sm">
+            <div className="mt-4 flex flex-wrap gap-2">
+              {renderStatusPill(`Status: ${task.status}`)}
+              {renderStatusPill(`Escrow: ${task.escrow_status || "unfunded"}`)}
+              {renderStatusPill(`Reward: ${task.reward_amount} ${task.currency}`)}
+            </div>
+
+            <div className="mt-5 space-y-3 text-sm">
               <div className="rounded-xl border border-white/10 p-3">
-                <span className="text-white/50">Status:</span> {task.status}
+                <span className="text-white/50">Task ID:</span> {task.id}
               </div>
               <div className="rounded-xl border border-white/10 p-3">
-                <span className="text-white/50">Escrow:</span> {task.escrow_status}
+                <span className="text-white/50">Created by:</span>{" "}
+                {creator ? `${creator.name} (${creator.id})` : task.created_by || "Unknown"}
               </div>
               <div className="rounded-xl border border-white/10 p-3">
-                <span className="text-white/50">Reward:</span> {task.reward_amount} {task.currency}
+                <span className="text-white/50">Assigned worker:</span>{" "}
+                {worker ? `${worker.name} (${worker.id})` : task.worker_id || "Not assigned"}
               </div>
               <div className="rounded-xl border border-white/10 p-3">
                 <span className="text-white/50">Category:</span> {task.category || "general"}
@@ -159,8 +244,52 @@ export default function TaskDetailPage() {
               </div>
             </div>
 
+            <div className="mt-5 rounded-xl border border-white/10 p-4">
+              <p className="text-sm text-white/50">Workflow progress</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">Open</p>
+                  <p className="mt-1 font-medium">
+                    {["open", "accepted", "submitted", "paid"].includes(task.status)
+                      ? "Yes"
+                      : "No"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">Escrow funded</p>
+                  <p className="mt-1 font-medium">
+                    {task.escrow_status === "funded" || task.escrow_status === "released"
+                      ? "Yes"
+                      : "No"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">Accepted</p>
+                  <p className="mt-1 font-medium">
+                    {["accepted", "submitted", "paid"].includes(task.status) ? "Yes" : "No"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">Proof submitted</p>
+                  <p className="mt-1 font-medium">
+                    {["submitted", "paid"].includes(task.status) ? "Yes" : "No"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">Payout released</p>
+                  <p className="mt-1 font-medium">{task.status === "paid" ? "Yes" : "No"}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-white/50">You are viewing as</p>
+                  <p className="mt-1 font-medium">
+                    {currentUser ? `${currentUser.name} (${currentUser.role})` : "Unknown"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-5 space-y-3">
-              {task.escrow_status === "unfunded" && (
+              {canFund && (
                 <button
                   onClick={fundEscrow}
                   disabled={actionLoading === "fund"}
@@ -170,7 +299,7 @@ export default function TaskDetailPage() {
                 </button>
               )}
 
-              {task.status === "open" && (
+              {canAccept && (
                 <button
                   onClick={acceptTask}
                   disabled={actionLoading === "accept"}
@@ -180,8 +309,9 @@ export default function TaskDetailPage() {
                 </button>
               )}
 
-              {task.status === "accepted" && (
+              {canSubmit && (
                 <div className="space-y-3 rounded-xl border border-white/10 p-3">
+                  <p className="text-sm text-white/50">Submit proof of work</p>
                   <textarea
                     className="min-h-[120px] w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none"
                     placeholder="Enter proof of work"
@@ -204,7 +334,7 @@ export default function TaskDetailPage() {
                 </div>
               )}
 
-              {task.status === "submitted" && (
+              {canApprove && (
                 <button
                   onClick={approveTask}
                   disabled={actionLoading === "approve"}
@@ -221,6 +351,12 @@ export default function TaskDetailPage() {
                   {task.proof_url && (
                     <p className="mt-2 break-all text-sm text-white/60">{task.proof_url}</p>
                   )}
+                </div>
+              )}
+
+              {!canFund && !canAccept && !canSubmit && !canApprove && (
+                <div className="rounded-xl border border-white/10 p-4 text-sm text-white/60">
+                  No action is available for this task under the current identity and task status.
                 </div>
               )}
             </div>
