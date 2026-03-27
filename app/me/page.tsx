@@ -74,7 +74,9 @@ export default function MePage() {
                   type="button"
                   onClick={() => handleUserChange(user.id)}
                   className={`rounded-full px-3 py-2 text-sm transition ${
-                    selected ? "bg-white text-black" : "border border-white/15 text-white/80"
+                    selected
+                      ? "bg-white text-black"
+                      : "border border-white/15 text-white/80"
                   }`}
                 >
                   {user.name} · {user.role}
@@ -92,21 +94,27 @@ export default function MePage() {
             <div className="mt-5 rounded-xl border border-white/10 p-4">
               <p className="text-sm text-white/50">Identity</p>
               <p className="mt-1 text-lg font-semibold">{currentUser.name}</p>
+
               <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-white/50">Role</p>
                   <p className="mt-1 font-medium capitalize">{currentUser.role}</p>
                 </div>
+
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-white/50">Wallet</p>
                   <p className="mt-1 font-medium">
                     {currentUser.wallet_connected ? "Connected" : "Not connected"}
                   </p>
                 </div>
+
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-white/50">World ID</p>
-                  <p className="mt-1 font-medium capitalize">{currentUser.world_id_status}</p>
+                  <p className="mt-1 font-medium capitalize">
+                    {currentUser.world_id_status}
+                  </p>
                 </div>
+
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-white/50">User ID</p>
                   <p className="mt-1 font-medium">{currentUser.id}</p>
@@ -140,7 +148,9 @@ export default function MePage() {
 
                 <div className="rounded-xl border border-white/10 p-4">
                   <p className="text-sm text-white/50">Reputation score</p>
-                  <p className="mt-1 text-lg font-semibold">{profile.reputation_score} / 100</p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {profile.reputation_score} / 100
+                  </p>
                 </div>
 
                 <div className="rounded-xl border border-white/10 p-4">
@@ -181,11 +191,26 @@ export default function MePage() {
                   >
                     Browse tasks
                   </Link>
+
                   <Link
                     href="/tasks/new"
                     className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
                   >
                     Create task
+                  </Link>
+
+                  <Link
+                    href="/wallet"
+                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                  >
+                    View wallet
+                  </Link>
+
+                  <Link
+                    href="/activity"
+                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                  >
+                    View activity
                   </Link>
                 </div>
               </div>
