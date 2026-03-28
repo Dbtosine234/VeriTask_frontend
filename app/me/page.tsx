@@ -7,7 +7,6 @@ import { DEMO_USERS, DemoUser, getCurrentUser, setStoredUserId } from "../../lib
 import AppHeader from "../../components/app-header";
 import PageShell from "../../components/page-shell";
 
-
 type Reputation = {
   user_id: string;
   verified: boolean;
@@ -71,166 +70,160 @@ export default function MePage() {
         </Link>
       </div>
 
-      {/* keep the rest of your current page content exactly below */}
-    </PageShell>
-  );
-}
-
-  <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-white/50">Active demo identity</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {DEMO_USERS.map((user) => {
-              const selected = currentUser?.id === user.id;
-              return (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => handleUserChange(user.id)}
-                  className={`rounded-full px-3 py-2 text-sm transition ${
-                    selected
-                      ? "bg-white text-black"
-                      : "border border-white/15 text-white/80"
-                  }`}
-                >
-                  {user.name} · {user.role}
-                </button>
-              );
-            })}
-          </div>
+      <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <p className="text-xs text-white/50">Active demo identity</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {DEMO_USERS.map((user) => {
+            const selected = currentUser?.id === user.id;
+            return (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => handleUserChange(user.id)}
+                className={`rounded-full px-3 py-2 text-sm transition ${
+                  selected
+                    ? "bg-white text-black"
+                    : "border border-white/15 text-white/80"
+                }`}
+              >
+                {user.name} · {user.role}
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-white/50">My profile</p>
-          <h1 className="text-3xl font-bold">Verified human reputation</h1>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <p className="text-xs text-white/50">My profile</p>
+        <h1 className="text-3xl font-bold">Verified human reputation</h1>
 
-          {currentUser && (
-            <div className="mt-5 rounded-xl border border-white/10 p-4">
-              <p className="text-sm text-white/50">Identity</p>
-              <p className="mt-1 text-lg font-semibold">{currentUser.name}</p>
+        {currentUser && (
+          <div className="mt-5 rounded-xl border border-white/10 p-4">
+            <p className="text-sm text-white/50">Identity</p>
+            <p className="mt-1 text-lg font-semibold">{currentUser.name}</p>
 
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl border border-white/10 p-3">
-                  <p className="text-white/50">Role</p>
-                  <p className="mt-1 font-medium capitalize">{currentUser.role}</p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-3">
-                  <p className="text-white/50">Wallet</p>
-                  <p className="mt-1 font-medium">
-                    {currentUser.wallet_connected ? "Connected" : "Not connected"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-3">
-                  <p className="text-white/50">World ID</p>
-                  <p className="mt-1 font-medium capitalize">
-                    {currentUser.world_id_status}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-3">
-                  <p className="text-white/50">User ID</p>
-                  <p className="mt-1 font-medium">{currentUser.id}</p>
-                </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl border border-white/10 p-3">
+                <p className="text-white/50">Role</p>
+                <p className="mt-1 font-medium capitalize">{currentUser.role}</p>
               </div>
-            </div>
-          )}
 
-          {loading && <p className="mt-4 text-sm text-white/60">Loading reputation...</p>}
-          {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
-
-          {profile && (
-            <div className="mt-5 space-y-3">
-              <div className="rounded-xl border border-white/10 p-4">
-                <p className="text-sm text-white/50">Verification</p>
-                <p className="mt-1 text-lg font-semibold">
-                  {profile.verified ? "World ID verified" : "World ID pending"}
+              <div className="rounded-xl border border-white/10 p-3">
+                <p className="text-white/50">Wallet</p>
+                <p className="mt-1 font-medium">
+                  {currentUser.wallet_connected ? "Connected" : "Not connected"}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-white/10 p-4">
-                  <p className="text-sm text-white/50">Tasks completed</p>
-                  <p className="mt-1 text-lg font-semibold">{profile.tasks_completed}</p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-4">
-                  <p className="text-sm text-white/50">Approval rate</p>
-                  <p className="mt-1 text-lg font-semibold">{profile.approval_rate}%</p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-4">
-                  <p className="text-sm text-white/50">Reputation score</p>
-                  <p className="mt-1 text-lg font-semibold">
-                    {profile.reputation_score} / 100
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 p-4">
-                  <p className="text-sm text-white/50">Disputes</p>
-                  <p className="mt-1 text-lg font-semibold">{profile.disputes}</p>
-                </div>
+              <div className="rounded-xl border border-white/10 p-3">
+                <p className="text-white/50">World ID</p>
+                <p className="mt-1 font-medium capitalize">
+                  {currentUser.world_id_status}
+                </p>
               </div>
 
-              <div className="rounded-xl border border-white/10 p-4">
-                <p className="text-sm text-white/50">Total earned</p>
-                <p className="mt-1 text-lg font-semibold">{profile.total_earned} USDC</p>
-              </div>
-
-              <div className="rounded-xl border border-white/10 p-4">
-                <p className="text-sm text-white/50">Badges</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {profile.badges.length > 0 ? (
-                    profile.badges.map((badge) => (
-                      <span
-                        key={badge}
-                        className="rounded-full border border-white/10 px-3 py-1 text-sm"
-                      >
-                        {badge}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-white/60">No badges yet</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-white/10 p-4">
-                <p className="text-sm text-white/50">Quick actions</p>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <Link
-                    href="/marketplace"
-                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
-                  >
-                    Browse tasks
-                  </Link>
-
-                  <Link
-                    href="/tasks/new"
-                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
-                  >
-                    Create task
-                  </Link>
-
-                  <Link
-                    href="/wallet"
-                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
-                  >
-                    View wallet
-                  </Link>
-
-                  <Link
-                    href="/activity"
-                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
-                  >
-                    View activity
-                  </Link>
-                </div>
+              <div className="rounded-xl border border-white/10 p-3">
+                <p className="text-white/50">User ID</p>
+                <p className="mt-1 font-medium">{currentUser.id}</p>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {loading && <p className="mt-4 text-sm text-white/60">Loading reputation...</p>}
+        {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+
+        {profile && (
+          <div className="mt-5 space-y-3">
+            <div className="rounded-xl border border-white/10 p-4">
+              <p className="text-sm text-white/50">Verification</p>
+              <p className="mt-1 text-lg font-semibold">
+                {profile.verified ? "World ID verified" : "World ID pending"}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-white/10 p-4">
+                <p className="text-sm text-white/50">Tasks completed</p>
+                <p className="mt-1 text-lg font-semibold">{profile.tasks_completed}</p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 p-4">
+                <p className="text-sm text-white/50">Approval rate</p>
+                <p className="mt-1 text-lg font-semibold">{profile.approval_rate}%</p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 p-4">
+                <p className="text-sm text-white/50">Reputation score</p>
+                <p className="mt-1 text-lg font-semibold">
+                  {profile.reputation_score} / 100
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 p-4">
+                <p className="text-sm text-white/50">Disputes</p>
+                <p className="mt-1 text-lg font-semibold">{profile.disputes}</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 p-4">
+              <p className="text-sm text-white/50">Total earned</p>
+              <p className="mt-1 text-lg font-semibold">{profile.total_earned} USDC</p>
+            </div>
+
+            <div className="rounded-xl border border-white/10 p-4">
+              <p className="text-sm text-white/50">Badges</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {profile.badges.length > 0 ? (
+                  profile.badges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full border border-white/10 px-3 py-1 text-sm"
+                    >
+                      {badge}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-white/60">No badges yet</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 p-4">
+              <p className="text-sm text-white/50">Quick actions</p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <Link
+                  href="/marketplace"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                >
+                  Browse tasks
+                </Link>
+
+                <Link
+                  href="/tasks/new"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                >
+                  Create task
+                </Link>
+
+                <Link
+                  href="/wallet"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                >
+                  View wallet
+                </Link>
+
+                <Link
+                  href="/activity"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm"
+                >
+                  View activity
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </main>
+    </PageShell>
   );
 }
