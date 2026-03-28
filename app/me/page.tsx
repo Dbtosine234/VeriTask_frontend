@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
 import { DEMO_USERS, DemoUser, getCurrentUser, setStoredUserId } from "../../lib/session";
+import AppHeader from "../../components/app-header";
+import PageShell from "../../components/page-shell";
+
 
 type Reputation = {
   user_id: string;
@@ -46,24 +49,34 @@ export default function MePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-6 text-white">
-      <div className="mx-auto max-w-md">
-        <div className="mb-4 flex gap-3">
-          <Link
-            href="/marketplace"
-            className="flex-1 rounded-xl border border-white/15 px-4 py-3 text-center font-medium"
-          >
-            Marketplace
-          </Link>
-          <Link
-            href="/tasks/new"
-            className="flex-1 rounded-xl bg-white px-4 py-3 text-center font-medium text-black"
-          >
-            Post a task
-          </Link>
-        </div>
+    <PageShell>
+      <AppHeader
+        title="Verified human reputation"
+        subtitle="Your profile, trust score, earnings, and quick actions."
+        backHref="/marketplace"
+      />
 
-        <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="mb-4 flex gap-3">
+        <Link
+          href="/marketplace"
+          className="flex-1 rounded-xl border border-white/15 px-4 py-3 text-center font-medium"
+        >
+          Marketplace
+        </Link>
+        <Link
+          href="/tasks/new"
+          className="flex-1 rounded-xl bg-white px-4 py-3 text-center font-medium text-black"
+        >
+          Post a task
+        </Link>
+      </div>
+
+      {/* keep the rest of your current page content exactly below */}
+    </PageShell>
+  );
+}
+
+  <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="text-xs text-white/50">Active demo identity</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {DEMO_USERS.map((user) => {
